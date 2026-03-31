@@ -20,16 +20,21 @@ const int motor_Bin2 = 35;
 
 // for front ultrasonicsensor
 const int trigPin = 24;
-const int echoPin = 36;
+const int echoPin = 35;
+//for back ultrasonicsensor 
+const int trigPin2 = null;
+const int echoPin2 = null;
+
+
 
 //lead screw motors
-const int lead_motor_Ain1 = null;
-const int lead_motor_Ain2 = null;
-const int lead_motor_PWMA = null;
+const int lead_motor_Ain1 = 13;
+const int lead_motor_Ain2 = 23;
+const int lead_motor_PWMA = 12;
 
-const int lead_motor_PWMB = null;
-const int lead_motor_Bin1 = null;
-const int lead_motor_Bin2 = null;
+const int lead_motor_PWMB = 19;
+const int lead_motor_Bin1 = 17;
+const int lead_motor_Bin2 = 15;
 
 // The speed of sound is roughly 0.034 centimeters per microsecond
 const float SOUND_SPEED = 0.034;
@@ -130,8 +135,56 @@ void loop() {
 
   }
   // turn on stairs climbing down
+  int speed2 = 125;
+  bool run {true};
+  long height {};
   else if (ch6 < 1400) {
-    
+    if (run)
+    {
+
+    height =  { distance_u_s_2()};
+      digitalWrite(motor_Ain1, HIGH);
+  digitalWrite(motor_Ain2, LOW);
+
+  digitalWrite(motor_Bin1, LOW);
+  digitalWrite(motor_Bin2, HIGH);
+
+  analogWrite(motor_PWMA, speed2);
+  analogWrite(motor_PWMB, speed2);
+  delay ( 2000);
+  stop();
+    }
+
+    move_back(125);
+  while ( distance_u_s_2() - height > 10 )
+  {
+    delay(500);
+  }
+  delay(500);
+  stop();
+
+  move_down_back_lead(255);
+delay((distance_u_s_2() - height )*75 + 100);
+stop_back_lead();
+
+move_back(125);
+delay (2000);
+stop();
+
+move_down_front_lead(255);
+delay((distance_u_s_2() - height )*75 + 100);
+stop_front_lead();
+
+move_back(125);
+delay (500);
+stop();
+
+move_up_front_lead(255);
+move_up_back_lead(255);
+delay((distance_u_s_2() - height )*75 + 100);
+stop_front_lead();
+stop_back_lead();
+delay(500);
   }
 else {
 
@@ -271,5 +324,21 @@ float distance_u_s_1() {
   // We add a 30,000 microsecond timeout (which is roughly 5 meters).
   // This prevents the ESP32 from freezing if the sound never bounces back.
   long duration = pulseIn(echoPin, HIGH, 30000);
+  return (duration * 0.0343 / 2);
+}
+
+float distance_u_s_2() {
+
+  digitalWrite(trigPin2, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin2, LOW);
+
+
+  // We add a 30,000 microsecond timeout (which is roughly 5 meters).
+  // This prevents the ESP32 from freezing if the sound never bounces back.
+  long duration = pulseIn(echoPin2, HIGH, 30000);
   return (duration * 0.0343 / 2);
 }
