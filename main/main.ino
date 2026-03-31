@@ -59,9 +59,27 @@ void setup() {
   pinMode(echoPin, INPUT);
 
 
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+
+
+
   pinMode(receiverPin, INPUT);
   // Attach the servo to GPIO 25
   myServo.attach(servoPin);
+
+
+
+  pinMode(lead_motor_Ain1, OUTPUT);
+  pinMode(lead_motor_Ain2, OUTPUT);
+
+  pinMode(lead_motor_PWMA, OUTPUT);
+  pinMode(lead_motor_PWMB, OUTPUT);
+
+  pinMode(lead_motor_Bin1, OUTPUT);
+  pinMode(lead_motor_Bin2, OUTPUT);
+
+
 }
 
 void loop() {
@@ -180,8 +198,7 @@ void loop() {
     move_up_front_lead(255);
     move_up_back_lead(255);
     delay((distance_u_s_2() - height) * 75 + 100);
-    stop_front_lead();
-    stop_back_lead();
+    stop_lead()
     delay(500);
   }
   else {
@@ -256,6 +273,17 @@ void stop_back_lead() {
   digitalWrite(lead_motor_Bin1, LOW);
   digitalWrite(lead_motor_Bin2, LOW);
   analogWrite(lead_motor_PWMB, 0);
+}
+void stop_lead()
+{
+  digitalWrite(lead_motor_Bin1, LOW);
+  digitalWrite(lead_motor_Bin2, LOW);
+  analogWrite(lead_motor_PWMB, 0);
+
+  digitalWrite(lead_motor_Ain1, LOW);
+  digitalWrite(lead_motor_Ain2, LOW);
+  analogWrite(lead_motor_PWMA, 0);
+
 }
 void move_front(int speed) {
   digitalWrite(motor_Ain1, HIGH);
