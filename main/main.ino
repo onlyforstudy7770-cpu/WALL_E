@@ -3,7 +3,7 @@
 
 
 Servo myServo;
-const int receiverPin =39;
+const int receiverPin = 39;
 const int servoPin = 22;
 
 IBusBM IBus;  // Create IBus Object
@@ -21,9 +21,9 @@ const int motor_Bin2 = 35;
 // for front ultrasonicsensor
 const int trigPin = 24;
 const int echoPin = 35;
-//for back ultrasonicsensor 
-const int trigPin2 = null;
-const int echoPin2 = null;
+//for back ultrasonicsensor
+const int trigPin2 = 18;
+const int echoPin2 = 34;
 
 
 
@@ -98,132 +98,130 @@ void loop() {
 
       move_down_front_lead(255);
       move_down_front_lead(255);
-      int time {0};
+      int time{ 0 };
       while (temp_distance - distance >= 250) {
         distance = distance_u_s_1();
         delay(500)
-        time++;
+          time++;
       }
-       stop_front_lead();
-       stop_back_lead();
+      stop_front_lead();
+      stop_back_lead();
 
       move_front(125);
       delay(1000);
       stop();
-      delay( 500);
+      delay(500);
 
       move_up_front_lead(255);
       delay(500 * time);
       stop_front_lead();
-      delay( 500);
+      delay(500);
 
       move_front(125);
       delay(2000);
       stop();
-      delay( 500);
+      delay(500);
 
-       move_up_back_lead(255);
+      move_up_back_lead(255);
       delay(500 * time);
       stop_back_lead();
-      delay( 500);
-      
+      delay(500);
+
       move_front(125);
       delay(500);
       stop();
-      delay( 500);
+      delay(500);
     }
-
   }
   // turn on stairs climbing down
   int speed2 = 125;
-  bool run {true};
-  long height {};
+  bool run{ true };
+  long height{};
+
   else if (ch6 < 1400) {
-    if (run)
-    {
-
-    height =  { distance_u_s_2()};
+    if (run) {
+      height = { distance_u_s_2() };
       digitalWrite(motor_Ain1, HIGH);
-  digitalWrite(motor_Ain2, LOW);
+      digitalWrite(motor_Ain2, LOW);
 
-  digitalWrite(motor_Bin1, LOW);
-  digitalWrite(motor_Bin2, HIGH);
+      digitalWrite(motor_Bin1, LOW);
+      digitalWrite(motor_Bin2, HIGH);
 
-  analogWrite(motor_PWMA, speed2);
-  analogWrite(motor_PWMB, speed2);
-  delay ( 2000);
-  stop();
+      analogWrite(motor_PWMA, speed2);
+      analogWrite(motor_PWMB, speed2);
+      delay(2000);
+      stop();
+      run = false;
     }
 
     move_back(125);
-  while ( distance_u_s_2() - height > 10 )
-  {
+    while ((distance_u_s_2() - height < 10)) {
+      delay(500);
+    }
+    delay(500);
+    stop();
+
+    move_down_back_lead(255);
+    delay((distance_u_s_2() - height) * 75 + 100);
+    stop_back_lead();
+
+    move_back(125);
+    delay(2000);
+    stop();
+
+    move_down_front_lead(255);
+    delay((distance_u_s_2() - height) * 75 + 100);
+    stop_front_lead();
+
+    move_back(125);
+    delay(500);
+    stop();
+
+    move_up_front_lead(255);
+    move_up_back_lead(255);
+    delay((distance_u_s_2() - height) * 75 + 100);
+    stop_front_lead();
+    stop_back_lead();
     delay(500);
   }
-  delay(500);
-  stop();
+  else {
 
-  move_down_back_lead(255);
-delay((distance_u_s_2() - height )*75 + 100);
-stop_back_lead();
+    // to move front
+    if (ch2 > 1520 && (ch1 < 1520 || ch1 > 1480)) {
+      int speed = map(ch1, 1520, 2000, 0, 255);
+      move_front(speed);
+    }
+    // to move back
+    else if (ch2 < 1480 && (ch1 < 1520 || ch1 > 1480)) {
+      int speed = map(ch1, 1480, 1000, 0, 255);
+      move_back(speed);
+    }
+    // to move left
+    else if (ch1 > 1520 && (ch2 < 1520 || ch2 > 1480)) {
+      int speed = map(ch2, 1520, 2000, 0, 255);
+      move_left(speed);
+    }
+    //to move right
+    else if (ch1 < 1480 && (ch2 < 1520 || ch2 > 1480)) {
+      int speed = map(ch2, 1480, 1000, 0, 255);
+      move_left(speed);
+    } else {
+      stop();
+    }
 
-move_back(125);
-delay (2000);
-stop();
 
-move_down_front_lead(255);
-delay((distance_u_s_2() - height )*75 + 100);
-stop_front_lead();
-
-move_back(125);
-delay (500);
-stop();
-
-move_up_front_lead(255);
-move_up_back_lead(255);
-delay((distance_u_s_2() - height )*75 + 100);
-stop_front_lead();
-stop_back_lead();
-delay(500);
+    // Read the PWM pulse width from the receiver
+    unsigned long pwmValue = pulseIn(receiverPin, HIGH, 25000);
+    if (pwmValue > 900 && pwmValue < 2100) 
+    {
+      int angle = map(pwmValue, 1000, 2000, 0, 90);
+      // Constrain the angle just in case the controller goes slightly out of bounds
+      angle = constrain(angle, 0, 90);
+      // Tell the servo to move to that angle
+      myServo.write(angle);
+    }
+    run = true;
   }
-else {
-
-  // to move front
-  if (ch1 > 1520 && (ch2 < 1520 || ch2 > 1480)) {
-    int speed = map(ch1, 1520, 2000, 0, 255);
-    move_front(speed);
-  }
-  // to move back
-  else if (ch1 < 1480 && (ch2 < 1520 || ch2 > 1480)) {
-    int speed = map(ch1, 1480, 1000, 0, 255);
-    move_back(speed);
-  }
-  // to move left
-  else if (ch2 > 1520 && (ch1 < 1520 || ch1 > 1480)) {
-    int speed = map(ch2, 1520, 2000, 0, 255);
-    move_left(speed);
-  }
-  //to move right
-  else if (ch2 < 1480 && (ch1 < 1520 || ch1 > 1480)) {
-    int speed = map(ch2, 1480, 1000, 0, 255);
-    move_left(speed);
-  } else {
-    stop();
-  }
-
-
-  // Read the PWM pulse width from the receiver
-  unsigned long pwmValue = pulseIn(receiverPin, HIGH, 25000);
-  if (pwmValue > 900 && pwmValue < 2100) {
-    int angle = map(pwmValue, 1000, 2000, 0, 90);
-
-    // Constrain the angle just in case the controller goes slightly out of bounds
-    angle = constrain(angle, 0, 90);
-    // Tell the servo to move to that angle
-    myServo.write(angle);
-  }
-
-}
   delay(200);
 }
 
@@ -248,15 +246,13 @@ void move_down_back_lead(int speed) {
   analogWrite(lead_motor_PWMB, speed);
 }
 
-void stop_front_lead()
-{
+void stop_front_lead() {
   digitalWrite(lead_motor_Ain1, LOW);
   digitalWrite(lead_motor_Ain2, LOW);
   analogWrite(lead_motor_PWMA, 0);
 }
 
-void stop_back_lead()
-{
+void stop_back_lead() {
   digitalWrite(lead_motor_Bin1, LOW);
   digitalWrite(lead_motor_Bin2, LOW);
   analogWrite(lead_motor_PWMB, 0);
