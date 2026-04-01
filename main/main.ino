@@ -39,12 +39,65 @@ const int lead_motor_Bin2 = 15;
 // The speed of sound is roughly 0.034 centimeters per microsecond
 const float SOUND_SPEED = 0.034;
 
+// Control Motor A
+void mControlA(int mspeed ) {
+
+  // Determine direction
+  if (mspeed < 0) {
+    // Motor backward
+    digitalWrite(motor_Ain1, LOW);
+    digitalWrite(motor_Ain2, HIGH);
+  } else {
+    // Motor frward
+    digitalWrite(motor_Ain1, HIGH);
+    digitalWrite(motor_Ain2, LOW);
+  }
+
+  // Control motor
+  analogWrite(motor_PWMA, abs(mspeed));
+
+}
+
+// Control Motor B
+void mControlB(int mspeed) {
+
+  // Determine direction
+  if (mspeed < 0) {
+    // Motor backward
+    digitalWrite(motor_Bin1, LOW);
+    digitalWrite(motor_Bin2, HIGH);
+  } else {
+    // Motor forward
+    digitalWrite(motor_Bin1, HIGH);
+    digitalWrite(motor_Bin2, LOW);
+  }
+
+  // Control motor
+  analogWrite(motor_PWMB, abs(mspeed));
+
+}
+
+
+// Read the number of a given channel and convert to the range provided.
+// If the channel is off, return the default value
+int readChannel(byte channelInput, int minLimit, int maxLimit, int defaultValue) {
+  uint16_t ch = ibus.readChannel(channelInput);
+  if (ch < 100) return defaultValue;
+  return map(ch, 1000, 2000, minLimit, maxLimit);
+}
+
+// Read the channel and return a boolean value
+bool readSwitch(byte channelInput, bool defaultValue) {
+  int intDefaultValue = (defaultValue) ? 100 : 0;
+  int ch = readChannel(channelInput, 0, 100, intDefaultValue);
+  return (ch > 50);
+}
 
 void setup() {
 
-  // Serial.begin(115200);
-  // Start IBus on Serial2 (RX pin 16, TX pin 17)
-  IBus.begin(Serial2, 1, rxPin, 17);
+  Serial.begin(115200);
+  // Start IBus on Serial2 (RX 2)
+  IBus.begin(Serial2);
 
   pinMode(motor_Ain1, OUTPUT);
   pinMode(motor_Ain2, OUTPUT);
@@ -83,27 +136,38 @@ void setup() {
 }
 
 void loop() {
-  // Tell the library to read the incoming serial data
-  IBus.loop();
-  // Read channel 0 (Channel 1 on transmitter)
-  // iBus channels are 0-indexed, so 0=CH1, 1=CH2, etc.
-  int ch1 = ibus.readChannel(0);
-  int ch2 = ibus.readChannel(1);
-  int ch3 = ibus.readChannel(2);  // Often throttle
-  // int ch4 = ibus.readChannel(3);
-  // int ch5 = ibus.readChannel(4);
-  int ch6 = ibus.readChannel(5);  // connected to SWC
 
+   // Get RC channel values
+  int CH1 = readChannel(0, -255, 255, 0);
+  int CH2 = readChannel(1, -255, 255, 0);
+  int CH3 = readChannel(2, 0, 155, 0);
+  int CH5 = readChannel(4, -100, 100, 0);
+  int CH6 = readSwitch(5, false);
 
+  // Print values to serial monitor for debugging
+  Serial.print("Ch1 = ");
+  Serial.print(CH1);
+
+  Serial.print(" Ch2 = ");
+  Serial.print(CH2);
+
+  Serial.print(" Ch3 = ");
+  Serial.print(rcCH3);
+
+  Serial.print(" Ch5 = ");
+  Serial.print(rcCH5);
+
+  Serial.print(" Ch6 = ");
+  Serial.println(rcCH6);
 
 
   // turn on the automatic stair climbing mode
-  if (ch6 > 1600) {
-
+  if (ch6 > 1600)
+  {
     float distance = distance_u_s_1();
-
     //  check if stairs is present or not
-    if (distance >= 2 && distance <= 400) {
+    if (distance >= 2 && distance <= 400) 
+    {
       while (distance > 10) {
         stop();
         move_front(125);
@@ -119,7 +183,7 @@ void loop() {
       int time{ 0 };
       while (temp_distance - distance >= 250) {
         distance = distance_u_s_1();
-        delay(500)
+        delay(500);
           time++;
       }
       stop_front_lead();
@@ -156,7 +220,8 @@ void loop() {
   bool run{ true };
   long height{};
 
-  else if (ch6 < 1400) {
+  else if (ch6 < 1400) 
+  {
     if (run) {
       height = { distance_u_s_2() };
       digitalWrite(motor_Ain1, HIGH);
@@ -198,10 +263,11 @@ void loop() {
     move_up_front_lead(255);
     move_up_back_lead(255);
     delay((distance_u_s_2() - height) * 75 + 100);
-    stop_lead()
+    stop_lead();
     delay(500);
   }
-  else {
+  else 
+  {
 
     // to move front
     if (ch2 > 1520 && (ch1 < 1520 || ch1 > 1480)) {
